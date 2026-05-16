@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../api/api"; // Usamos nuestra instancia centralizada
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import axios from "axios";
 export default function Login() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");

@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  timeout: 15000,
+baseURL: process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : "http://localhost:5000/api",  timeout: 15000,
   // 💡 Quitamos el Content-Type fijo para que Axios lo maneje dinámicamente
 });
 
