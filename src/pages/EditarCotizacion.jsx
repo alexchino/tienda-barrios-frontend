@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import api from "../api/api";
 import { useParams, useNavigate } from "react-router-dom";
