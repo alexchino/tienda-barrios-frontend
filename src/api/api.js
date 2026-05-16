@@ -1,8 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-baseURL: process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : "http://localhost:5000/api",  timeout: 15000,
-  // 💡 Quitamos el Content-Type fijo para que Axios lo maneje dinámicamente
+baseURL: "https://tienda-barrios-backend-5.onrender.com/api", 
+timeout: 1500,
+// 💡 Quitamos el Content-Type fijo para que Axios lo maneje dinámicamente
 });
 
 // 2. Interceptor de Peticiones (Seguridad)
