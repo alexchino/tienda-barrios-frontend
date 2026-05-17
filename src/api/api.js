@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-baseURL: "https://tienda-barrios-backend-5.onrender.com/api", 
+baseURL: "https://tienda-barrios-backend.onrender.com/api", 
 timeout: 60000,
 // 💡 Quitamos el Content-Type fijo para que Axios lo maneje dinámicamente
 });
