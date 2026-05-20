@@ -7,7 +7,6 @@ export default function TicketVenta({ ticket, setTicket }) {
   if (!ticket) return null;
 
   // 🛡️ NORMALIZACIÓN: Nos aseguramos de tener un array de productos
-  // Esto evita el error del .map() si la propiedad viene como undefined
   const listaProductos = ticket.productos || ticket.Productos || [];
 
   const imprimirTicket = () => {
@@ -26,12 +25,13 @@ export default function TicketVenta({ ticket, setTicket }) {
             table { width: 100%; border-collapse: collapse; }
             .flex { display: flex; justify-content: space-between; }
             .fw-bold { font-weight: bold; }
+            .mt-1 { margin-top: 5px; }
           </style>
         </head>
         <body>
           <div class="text-center">
             <h4>🧾 TICKET DE VENTA</h4>
-            <p>${ticket.EmisorNombre || "SISTEMA DE VENTAS"}</p>
+            <p>${ticket.EmisorNombre || "TIENDA BARRIOS"}</p>
           </div>
           <hr />
           <p><strong>Cliente:</strong> ${ticket.NombreCliente || "Consumidor Final"}</p>
@@ -50,15 +50,20 @@ export default function TicketVenta({ ticket, setTicket }) {
                 <tr>
                   <td>${p.Nombre || p.nombre}</td>
                   <td align="center">${p.Cantidad || p.cantidad}</td>
-                  <td align="right">$${Number(p.Subtotal || p.subtotal || 0).toFixed(2)}</td>
+                  <td align="right">$${Number(p.PrecioUnitario * (p.Cantidad || p.cantidad)).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
           <hr />
-          <div class="flex"><span>Subtotal:</span> <span>$${Number(ticket.Subtotal || 0).toFixed(2)}</span></div>
-          <div class="flex"><span>IVA:</span> <span>$${Number(ticket.IVA || 0).toFixed(2)}</span></div>
-          <div class="flex fw-bold"><span>TOTAL:</span> <span>$${Number(ticket.Total || 0).toFixed(2)}</span></div>
+          
+          <div class="flex fw-bold" style="font-size: 14px;"><span>TOTAL:</span> <span>$${Number(ticket.Total || 0).toFixed(2)}</span></div>
+          
+          ${ticket.Efectivo !== undefined ? `
+            <div class="flex mt-1"><span>Efectivo Recibido:</span> <span>$${Number(ticket.Efectivo).toFixed(2)}</span></div>
+            <div class="flex fw-bold mt-1"><span>Cambio / Vuelto:</span> <span>$${Number(ticket.Vuelto).toFixed(2)}</span></div>
+          ` : ''}
+
           <hr />
           <p class="text-center">¡Gracias por su compra!</p>
         </body>
@@ -74,11 +79,11 @@ export default function TicketVenta({ ticket, setTicket }) {
   };
 
   return (
-    <div className="card mt-4 p-4 shadow-lg border-0 mx-auto" style={{ width: "380px", backgroundColor: "#fff" }}>
+    <div className="card mt-4 p-4 shadow-lg border-0 mx-auto" style={{ width: "380px", backgroundColor: "#fff", color: "#000" }}>
       <div ref={ticketRef}>
         <div className="text-center">
           <h5 className="fw-bold mb-1">🧾 TICKET DE VENTA</h5>
-          <p className="text-muted small">{ticket.EmisorNombre || "Empresa de San Alejo"}</p>
+          <p className="text-muted small">{ticket.EmisorNombre || "Tienda Barrios"}</p>
         </div>
         
         <div className="small mt-3">
@@ -96,19 +101,18 @@ export default function TicketVenta({ ticket, setTicket }) {
 
         <table className="table table-sm table-borderless small">
           <thead>
-            <tr className="border-bottom">
+            <tr className="border-bottom text-dark">
               <th>Producto</th>
               <th className="text-center">Cant</th>
               <th className="text-end">Subt</th>
             </tr>
           </thead>
           <tbody>
-            {/* ✅ Usamos listaProductos que ya validamos arriba */}
             {listaProductos.map((p, idx) => (
-              <tr key={idx}>
+              <tr key={idx} className="text-dark">
                 <td>{p.Nombre || p.nombre}</td>
                 <td className="text-center">{p.Cantidad || p.cantidad}</td>
-                <td className="text-end">${Number(p.Subtotal || p.subtotal || 0).toFixed(2)}</td>
+                <td className="text-end">${Number(p.PrecioUnitario * (p.Cantidad || p.cantidad)).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -117,14 +121,26 @@ export default function TicketVenta({ ticket, setTicket }) {
         <hr className="my-3" style={{ borderTop: "1px dashed #ccc" }} />
 
         <div className="small">
-          <div className="d-flex justify-content-between">
-            <span>Subtotal:</span>
-            <span>${Number(ticket.Subtotal || 0).toFixed(2)}</span>
-          </div>
-          <div className="d-flex justify-content-between fw-bold fs-6 mt-2">
+          <div className="d-flex justify-content-between fw-bold fs-5 mt-2 text-dark">
             <span>TOTAL:</span>
-            <span className="text-success">${Number(ticket.Total || 0).toFixed(2)}</span>
+            <span>${Number(ticket.Total || 0).toFixed(2)}</span>
           </div>
+          
+          {/* --- INICIO DE LO NUEVO: Efectivo y Vuelto --- */}
+          {ticket.Efectivo !== undefined && (
+            <>
+              <div className="d-flex justify-content-between text-secondary mt-2" style={{ fontSize: '0.9rem' }}>
+                <span>Efectivo Recibido:</span>
+                <span>${ticket.Efectivo.toFixed(2)}</span>
+              </div>
+              <div className="d-flex justify-content-between fw-bold text-dark mt-1" style={{ fontSize: '0.95rem' }}>
+                <span>Cambio / Vuelto:</span>
+                <span>${ticket.Vuelto.toFixed(2)}</span>
+              </div>
+            </>
+          )}
+          {/* --- FIN DE LO NUEVO --- */}
+
         </div>
       </div>
 
@@ -132,7 +148,7 @@ export default function TicketVenta({ ticket, setTicket }) {
         <button className="btn btn-primary w-100 fw-bold shadow-sm" onClick={imprimirTicket}>
           🖨 Imprimir
         </button>
-        <button className="btn btn-light w-100 border" onClick={() => setTicket(null)}>
+        <button className="btn btn-outline-secondary w-100 fw-bold border" onClick={() => setTicket(null)}>
           Cerrar
         </button>
       </div>
