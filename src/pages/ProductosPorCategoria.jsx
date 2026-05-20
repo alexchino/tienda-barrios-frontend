@@ -134,7 +134,7 @@ export default function ProductosPorCategoria() {
               <div className="card h-100 border-0 shadow-sm">
                 <div style={{ height: "180px" }} className="bg-light">
                   {p.imagen ? (
-                    <img src={`http://localhost:5000/uploads/${p.imagen}`} alt={p.nombre} className="w-100 h-100" style={{ objectFit: "cover" }} />
+                    <img src={`https://tienda-barrios-backend.onrender.com/${p.imagen}`} alt={p.nombre} className="w-100 h-100" style={{ objectFit: "cover" }} />
                   ) : (
                     <div className="h-100 d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
                   )}

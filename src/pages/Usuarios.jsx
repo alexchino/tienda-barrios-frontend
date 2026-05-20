@@ -28,7 +28,7 @@ export default function UsuariosPage() {
   const obtenerUsuarios = async () => {
     setCargando(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/usuarios");
+      const res = await axios.get("https://tienda-barrios-backend.onrender.com/api/usuarios");
       setUsuarios(res.data);
     } catch (error) {
       console.error("❌ Error al obtener usuarios:", error);
@@ -61,11 +61,11 @@ export default function UsuariosPage() {
     try {
       if (editando) {
         await axios.put(
-          `http://localhost:5000/api/usuarios/${editando}`,
+          `https://tienda-barrios-backend.onrender.com/api/usuarios/${editando}`,
           usuarioData
         );
       } else {
-        await axios.post("http://localhost:5000/api/usuarios", usuarioData);
+        await axios.post("https://tienda-barrios-backend.onrender.com/api/usuarios", usuarioData);
       }
       await obtenerUsuarios();
       setMostrarModal(false);
@@ -80,7 +80,7 @@ export default function UsuariosPage() {
   const eliminarUsuario = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/usuarios/${id}`);
+      await axios.delete(`https://tienda-barrios-backend.onrender.com/api/usuarios/${id}`);
       await obtenerUsuarios();
     } catch (error) {
       console.error("❌ Error al eliminar usuario:", error);

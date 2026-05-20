@@ -14,7 +14,7 @@ export default function Proveedores() {
 
   const obtenerProveedores = async () => {
     try {
-      const respuesta = await fetch("http://localhost:5000/api/proveedores");
+      const respuesta = await fetch("https://tienda-barrios-backend.onrender.com/api/proveedores");
       const datos = await respuesta.json();
       setProveedores(datos);
       setCargando(false);
@@ -27,7 +27,7 @@ export default function Proveedores() {
   const eliminarProveedor = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas desactivar este proveedor?")) {
       try {
-        await fetch(`http://localhost:5000/api/proveedores/${id}`, {
+        await fetch(`https://tienda-barrios-backend.onrender.com/api/proveedores/${id}`, {
           method: "DELETE",
         });
         obtenerProveedores();
@@ -42,7 +42,7 @@ export default function Proveedores() {
     e.preventDefault(); // Evita que la página se recargue al enviar el formulario
     
     try {
-      const respuesta = await fetch(`http://localhost:5000/api/proveedores/${proveedorEditando._id}`, {
+      const respuesta = await fetch(`https://tienda-barrios-backend.onrender.com/api/proveedores/${proveedorEditando._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

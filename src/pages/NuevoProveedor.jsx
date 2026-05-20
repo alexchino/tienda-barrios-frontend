@@ -27,7 +27,7 @@ export default function NuevoProveedor() {
     setCargando(true);
     
     try {
-      const respuesta = await fetch("http://localhost:5000/api/proveedores", {
+      const respuesta = await fetch("https://tienda-barrios-backend.onrender.com/api/proveedores", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -4,7 +4,7 @@ import Pagination from "../components/Pagination";
 // ✅ CÓDIGO DE BARRAS: Agregamos FaBarcode a las importaciones
 import { FaEdit, FaTrash, FaPlus, FaSearch, FaImage, FaBoxOpen, FaTruck, FaBarcode } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://tienda-barrios-backend.onrender.com"; // Asegúrate de que esta URL sea correcta para acceder a las imágenes
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
