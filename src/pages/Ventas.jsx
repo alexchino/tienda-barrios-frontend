@@ -39,21 +39,23 @@ export default function Ventas() {
   const [carrito, setCarrito] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ useEffect corregido (sin duplicados)
+  // ✅ NUEVO: Estados para el efectivo y el vuelto
+  const [efectivoRecibido, setEfectivoRecibido] = useState("");
+
   useEffect(() => {
     cargarDatos();
     
     // Si venimos del Historial de Cotizaciones, auto-llenamos todo
     if (location.state && location.state.cotizacion) {
       const cot = location.state.cotizacion;
-      setCotizacionOrigenId(cot._id); // Guardamos el ID para actualizarla a "Pagado" después
+      setCotizacionOrigenId(cot._id); 
       
       setCliente({
         nombre: cot.Nombre || "",
         apellido: cot.Apellido || "",
         correo: cot.Correo || "",
         telefono: cot.Telefono || "",
-        dui: "" // Las cotizaciones no suelen tener DUI, se llena en caja
+        dui: "" 
       });
       
       setCarrito(cot.productos || []);
@@ -75,7 +77,6 @@ export default function Ventas() {
     }
   };
 
-  // 🔍 BUSCADOR MANUAL MEJORADO
   const manejarBusqueda = (texto) => {
     setBusquedaProducto(texto);
     if (!texto.trim()) return setProductosFiltrados([]);
@@ -86,11 +87,9 @@ export default function Ventas() {
     setProductosFiltrados(coincidencias);
   };
 
-  // 📠 LÓGICA DEL ESCÁNER DE CÓDIGO DE BARRAS
   const manejarEscaneo = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
-
       if (!codigoEscaneado.trim()) return;
 
       const productoEncontrado = productos.find(p => p.codigo_barras === codigoEscaneado.trim());
@@ -129,7 +128,7 @@ export default function Ventas() {
         setMensaje(`❌ Código ${codigoEscaneado} no registrado`);
         setTimeout(() => setMensaje(""), 3000);
       }
-      setCodigoEscaneado(""); // Limpiar input para el siguiente "bip"
+      setCodigoEscaneado(""); 
     }
   };
 
@@ -175,10 +174,9 @@ export default function Ventas() {
     setTimeout(() => setMensaje(""), 1500);
   };
 
-  const totalVenta = () => {
-    const subtotal = carrito.reduce((acc, p) => acc + p.Cantidad * p.PrecioUnitario, 0);
-    const iva = subtotal * 0.13;
-    return { subtotal, iva, total: subtotal + iva };
+  // ✅ NUEVO: Función de total calculando solo el neto sin IVA
+  const calcularTotal = () => {
+    return carrito.reduce((acc, p) => acc + p.Cantidad * p.PrecioUnitario, 0);
   };
 
   const realizarVenta = async () => {
@@ -186,13 +184,19 @@ export default function Ventas() {
       return setMensaje("⚠️ Por favor, completa los datos del cliente y el carrito.");
     }
 
-    // Validación obligatoria para Factura 
     if (tipoDocumento === "factura" && !cliente.dui.trim()) {
       return setMensaje("⚠️ El DUI/NIT es obligatorio para emitir facturas.");
     }
 
+    const total = calcularTotal();
+    const efectivo = Number(efectivoRecibido);
+
+    // ✅ Validación: El cliente debe dar suficiente dinero
+    if (efectivo < total) {
+      return setMensaje("⚠️ El efectivo recibido es menor al total de la compra.");
+    }
+
     setLoading(true);
-    const { subtotal, iva, total } = totalVenta();
 
     try {
       const payload = {
@@ -208,17 +212,17 @@ export default function Ventas() {
 
       const res = await api.post("/ventas/registrar", payload);
 
-      // ✅ NUEVO: Si esta venta vino de una cotización, la marcamos como pagada
       if (cotizacionOrigenId) {
         await api.put(`/cotizaciones/${cotizacionOrigenId}`, { estado: 'Pagado' });
       }
 
+      // ✅ Enviamos Efectivo y Vuelto al Ticket
       setTicket({
         _id: res.data.VentaID,
         NumeroSecuencia: res.data.NumeroTicket || Math.floor(Math.random() * 10000), 
         Total: total,
-        Subtotal: subtotal,
-        IVA: iva, 
+        Efectivo: efectivo,
+        Vuelto: efectivo - total,
         Fecha: new Date(),
         NombreCliente: `${cliente.nombre} ${cliente.apellido}`,
         DUICliente: cliente.dui,
@@ -230,9 +234,10 @@ export default function Ventas() {
       setCarrito([]);
       setCliente({ nombre: "", apellido: "", correo: "", telefono: "", dui: "" });
       setTipoDocumento("ticket");
-      setCotizacionOrigenId(null); // ✅ Limpiamos el ID de la cotización de origen
+      setCotizacionOrigenId(null);
+      setEfectivoRecibido(""); // Limpiar caja de efectivo
       cargarDatos();
-      setMensaje(`✅ ${tipoDocumento.toUpperCase()} generado con éxito.`);
+      setMensaje(`✅ Venta procesada con éxito. Cambio: $${(efectivo - total).toFixed(2)}`);
       
     } catch (err) {
       setMensaje(`❌ Error: ${err.response?.data?.mensaje || "Fallo en la red"}`);
@@ -240,6 +245,9 @@ export default function Ventas() {
       setLoading(false);
     }
   };
+
+  const total = calcularTotal();
+  const vuelto = efectivoRecibido ? (Number(efectivoRecibido) - total) : 0;
 
   return (
     <div className={`container-fluid p-4 ${darkMode ? 'bg-dark text-white' : 'bg-light'} min-vh-100 pb-5`}>
@@ -254,9 +262,7 @@ export default function Ventas() {
           <div className={`card shadow-sm border-0 p-4 mb-4 rounded-4 ${darkMode ? 'bg-secondary text-white' : 'bg-white'}`}>
             <h5 className="fw-bold mb-3"><FaSearch className="me-2 text-primary" /> Selección de Productos</h5>
             
-            {/* SECCIÓN DUAL: ESCÁNER Y MANUAL */}
             <div className="row g-3 mb-3">
-              {/* Escáner de Código de Barras */}
               <div className="col-md-6">
                 <div className="input-group shadow-sm">
                   <span className="input-group-text bg-success text-white border-success">
@@ -274,7 +280,6 @@ export default function Ventas() {
                 </div>
               </div>
 
-              {/* Búsqueda Manual */}
               <div className="col-md-6 position-relative">
                 <div className="input-group shadow-sm">
                   <span className="input-group-text bg-light border-0">
@@ -316,7 +321,6 @@ export default function Ventas() {
 
             <h5 className="fw-bold mb-3 mt-4"><FaUser className="me-2 text-primary" /> Detalles de Facturación</h5>
             
-            {/* Selector de Comprobante */}
             <div className={`d-flex gap-3 mb-4 p-3 rounded-3 shadow-sm ${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'}`}>
               <span className="fw-bold small text-muted">DOCUMENTO:</span>
               <div className="form-check">
@@ -361,7 +365,7 @@ export default function Ventas() {
         <div className="col-lg-5">
           <div className={`card shadow-sm border-0 p-4 rounded-4 h-100 d-flex flex-column ${darkMode ? 'bg-secondary text-white' : 'bg-white'}`}>
             <h5 className="fw-bold mb-3 border-bottom pb-3">🛒 Resumen de Compra</h5>
-            <div className="table-responsive flex-grow-1" style={{ minHeight: "300px" }}>
+            <div className="table-responsive flex-grow-1" style={{ minHeight: "220px" }}>
               <table className={`table table-hover table-sm ${darkMode ? 'table-dark' : ''}`}>
                 <thead>
                   <tr className="small text-muted">
@@ -389,14 +393,46 @@ export default function Ventas() {
             </div>
 
             <div className="mt-auto pt-3 border-top">
-              <div className="d-flex justify-content-between mb-1"><span>Subtotal:</span><span>${totalVenta().subtotal.toFixed(2)}</span></div>
-              <div className="d-flex justify-content-between mb-1"><span>IVA (13%):</span><span>${totalVenta().iva.toFixed(2)}</span></div>
-              <div className="d-flex justify-content-between fs-2 fw-bold text-success mb-4"><span>TOTAL:</span><span>${totalVenta().total.toFixed(2)}</span></div>
+              {/* ✅ TOTAL GIGANTE SIN IVA */}
+              <div className="d-flex justify-content-between fs-2 fw-bold text-success mb-3">
+                <span>TOTAL:</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
               
+              {/* ✅ NUEVO: SECCIÓN DE EFECTIVO Y VUELTO */}
+              <div className="row g-2 mb-4">
+                <div className="col-6">
+                  <label className="small fw-bold text-muted">Efectivo Recibido</label>
+                  <div className="input-group input-group-lg">
+                    <span className="input-group-text bg-light">$</span>
+                    <input 
+                      type="number" 
+                      className="form-control fw-bold text-primary" 
+                      placeholder="0.00" 
+                      value={efectivoRecibido} 
+                      onChange={(e) => setEfectivoRecibido(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small fw-bold text-muted">Vuelto a entregar</label>
+                  <div className="input-group input-group-lg">
+                    <span className="input-group-text bg-light">$</span>
+                    <input 
+                      type="text" 
+                      className={`form-control fw-bold ${vuelto >= 0 && efectivoRecibido !== "" ? 'text-success' : 'text-danger'}`} 
+                      value={efectivoRecibido !== "" ? vuelto.toFixed(2) : "0.00"} 
+                      readOnly 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón protegido si no dan suficiente dinero */}
               <button 
                 className="btn btn-success btn-lg w-100 py-3 rounded-pill fw-bold shadow" 
                 onClick={realizarVenta} 
-                disabled={carrito.length === 0 || loading}
+                disabled={carrito.length === 0 || loading || (efectivoRecibido === "") || vuelto < 0}
               >
                 {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : <FaCashRegister className="me-2" />}
                 PROCESAR PAGO E IMPRIMIR
