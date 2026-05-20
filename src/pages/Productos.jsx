@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/api"; 
 import Pagination from "../components/Pagination"; 
-// ✅ CÓDIGO DE BARRAS: Agregamos FaBarcode a las importaciones
 import { FaEdit, FaTrash, FaPlus, FaSearch, FaImage, FaBoxOpen, FaTruck, FaBarcode } from "react-icons/fa";
-
-const API_URL = "https://tienda-barrios-backend.onrender.com"; // Asegúrate de que esta URL sea correcta para acceder a las imágenes
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
@@ -14,7 +11,7 @@ export default function Productos() {
   const [productoActual, setProductoActual] = useState({
     _id: "",
     nombre: "",
-    codigo_barras: "", // ✅ CÓDIGO DE BARRAS: Nuevo campo en el estado inicial
+    codigo_barras: "",
     descripcion: "",
     precio: "",
     stock: "",
@@ -64,7 +61,7 @@ export default function Productos() {
     setProductoActual({
       _id: "",
       nombre: "",
-      codigo_barras: "", // ✅ CÓDIGO DE BARRAS: Limpiamos al abrir modal
+      codigo_barras: "", 
       descripcion: "",
       precio: "",
       stock: "",
@@ -80,7 +77,7 @@ export default function Productos() {
     setProductoActual({
       _id: p._id,
       nombre: p.nombre || "",
-      codigo_barras: p.codigo_barras || "", // ✅ CÓDIGO DE BARRAS: Cargamos el código si existe
+      codigo_barras: p.codigo_barras || "", 
       descripcion: p.descripcion || "",
       precio: p.precio || "",
       stock: p.stock || "",
@@ -106,7 +103,6 @@ export default function Productos() {
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append("nombre", productoActual.nombre);
-    // ✅ CÓDIGO DE BARRAS: Lo enviamos al backend (puede ir vacío ya que no es obligatorio)
     formData.append("codigo_barras", productoActual.codigo_barras || ""); 
     formData.append("descripcion", productoActual.descripcion || "");
     formData.append("precio", productoActual.precio);
@@ -150,7 +146,7 @@ export default function Productos() {
 
   const productosFiltrados = productos.filter((p) =>
     (p.nombre?.toLowerCase() || "").includes(busqueda.toLowerCase()) ||
-    (p.codigo_barras || "").includes(busqueda) // ✅ CÓDIGO DE BARRAS: También permite buscar por código en la tabla
+    (p.codigo_barras || "").includes(busqueda) 
   );
 
   const inicio = (paginaActual - 1) * productosPorPagina;
@@ -188,7 +184,7 @@ export default function Productos() {
           <thead className="table-dark text-center">
             <tr>
               <th>Imagen</th>
-              <th>Código</th> {/* ✅ CÓDIGO DE BARRAS: Nueva columna */}
+              <th>Código</th> 
               <th>Producto</th>
               <th>Categoría</th>
               <th>Proveedor</th> 
@@ -208,9 +204,9 @@ export default function Productos() {
               productosPaginados.map((p) => (
                 <tr key={p._id}>
                   <td>
-                    {p.imagen ? (
+                    {p.imagen && p.imagen !== "default.png" ? (
                       <img 
-                        src={`${API_URL}/uploads/${p.imagen}`} 
+                        src={p.imagen} // ☁️ CAMBIO: Ahora carga directamente desde Cloudinary
                         alt={p.nombre} 
                         className="rounded shadow-sm" 
                         style={{ width: "45px", height: "45px", objectFit: "cover", cursor: "zoom-in" }} 
@@ -218,7 +214,6 @@ export default function Productos() {
                       />
                     ) : <FaImage className="text-muted fs-4" />}
                   </td>
-                  {/* ✅ CÓDIGO DE BARRAS: Mostramos el código con un diseño limpio */}
                   <td>
                     {p.codigo_barras ? (
                        <span className="badge bg-light text-dark border">
@@ -285,7 +280,7 @@ export default function Productos() {
                       <input type="text" name="nombre" value={productoActual.nombre} onChange={handleChange} className="form-control bg-light border-0 p-2" required placeholder="Ej. Filtro de Aceite" />
                     </div>
 
-                    {/* ✅ CÓDIGO DE BARRAS: Input para escanear/escribir el código */}
+                    {/* CÓDIGO DE BARRAS */}
                     <div className="col-md-6">
                       <label className="form-label fw-bold small text-muted"><FaBarcode /> Código de Barras (Opcional)</label>
                       <input 
@@ -377,7 +372,8 @@ export default function Productos() {
       {/* ZOOM MODAL PARA IMÁGENES */}
       {imagenModal && (
         <div className="modal show d-flex align-items-center justify-content-center" style={{ backgroundColor: "rgba(0,0,0,0.9)", position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 3000 }} onClick={() => setImagenModal(null)}>
-          <img src={`${API_URL}/uploads/${imagenModal}`} alt="Zoom" className="img-fluid rounded-4 shadow-lg animate__animated animate__zoomIn" style={{ maxHeight: "85vh", border: "3px solid white" }} />
+          {/* ☁️ CAMBIO: Ahora carga directamente desde Cloudinary en el Zoom */}
+          <img src={imagenModal} alt="Zoom" className="img-fluid rounded-4 shadow-lg animate__animated animate__zoomIn" style={{ maxHeight: "85vh", border: "3px solid white" }} />
         </div>
       )}
     </div>
