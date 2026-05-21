@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
-import api from "../api/api"; // Tu instancia de Axios configurada
+import api from "../api/api"; 
 import { useParams, useNavigate } from "react-router-dom";
-// ✅ CÓDIGO DE BARRAS: Importamos FaBarcode
 import { FaArrowLeft, FaPlus, FaBoxOpen, FaBarcode } from "react-icons/fa";
 import Pagination from "../components/Pagination";
 
@@ -16,7 +15,7 @@ export default function ProductosPorCategoria() {
 
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: "",
-    codigo_barras: "", // ✅ CÓDIGO DE BARRAS: Añadido al estado inicial
+    codigo_barras: "", 
     descripcion: "",
     precio: "",
     stock: "",
@@ -82,7 +81,6 @@ export default function ProductosPorCategoria() {
     try {
       const formData = new FormData();
       formData.append("nombre", nuevoProducto.nombre);
-      // ✅ CÓDIGO DE BARRAS: Lo enviamos al backend
       formData.append("codigo_barras", nuevoProducto.codigo_barras || ""); 
       formData.append("descripcion", nuevoProducto.descripcion);
       formData.append("precio", nuevoProducto.precio);
@@ -99,7 +97,6 @@ export default function ProductosPorCategoria() {
       });
 
       setShowModal(false);
-      // ✅ CÓDIGO DE BARRAS: Limpiamos el campo también
       setNuevoProducto({ nombre: "", codigo_barras: "", descripcion: "", precio: "", stock: "", proveedor_id: "", imagen: null });
       obtenerDatos(); 
       alert("✨ Producto guardado con éxito");
@@ -133,8 +130,9 @@ export default function ProductosPorCategoria() {
             <div key={p.id} className="col-xl-3 col-lg-4 col-md-6">
               <div className="card h-100 border-0 shadow-sm">
                 <div style={{ height: "180px" }} className="bg-light">
-                  {p.imagen ? (
-                    <img src={`https://tienda-barrios-backend.onrender.com/${p.imagen}`} alt={p.nombre} className="w-100 h-100" style={{ objectFit: "cover" }} />
+                  {p.imagen && p.imagen !== "default.png" ? (
+                    /* ☁️ CAMBIO: Ahora carga directamente el enlace de Cloudinary */
+                    <img src={p.imagen} alt={p.nombre} className="w-100 h-100" style={{ objectFit: "cover" }} />
                   ) : (
                     <div className="h-100 d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
                   )}
@@ -142,7 +140,6 @@ export default function ProductosPorCategoria() {
                 <div className="card-body">
                   <h6 className="fw-bold mb-1">{p.nombre}</h6>
                   
-                  {/* ✅ CÓDIGO DE BARRAS: Lo mostramos en la tarjeta */}
                   <p className="small text-muted mb-2">
                     <FaBarcode className="me-1" /> {p.codigo_barras || "N/A"}
                   </p>
@@ -188,7 +185,6 @@ export default function ProductosPorCategoria() {
                     <input name="nombre" value={nuevoProducto.nombre} className="form-control bg-light" onChange={handleChange} required />
                   </div>
 
-                  {/* ✅ CÓDIGO DE BARRAS: Nuevo input para el formulario */}
                   <div className="mb-3">
                     <label className="form-label fw-bold small"><FaBarcode className="me-1"/>Código de Barras (Opcional)</label>
                     <input 
